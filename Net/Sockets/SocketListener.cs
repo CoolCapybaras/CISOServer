@@ -5,26 +5,25 @@ namespace CISOServer.Net.Sockets
 {
 	public class SocketListener
 	{
-		private TcpListener tcpListener;
 		private HttpListener httpListener;
+		private TcpListener tcpListener;
 
 		public Action<HttpListenerContext> AuthRequest;
+
+		public SocketListener(string hostname)
+		{
+			httpListener = new HttpListener();
+			httpListener.Prefixes.Add(hostname);
+		}
 
 		public SocketListener(int port)
 		{
 			tcpListener = new TcpListener(IPAddress.Any, port);
 		}
 
-		public SocketListener(string hostname)
-		{
-			httpListener = new HttpListener();
-			httpListener.Prefixes.Add(hostname);
-			httpListener.Prefixes.Add("http://*:8886/auth/");
-		}
-
 		public void Start()
 		{
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			tcpListener.Start();
 #else
 			httpListener.Start();
@@ -33,7 +32,7 @@ namespace CISOServer.Net.Sockets
 
 		public async Task<ClientSocket> AcceptSocketAsync(CancellationToken cancellationToken)
 		{
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			var socket = await tcpListener.AcceptSocketAsync(cancellationToken);
 			return new ClientSocket(socket, ((IPEndPoint)socket.RemoteEndPoint!).Address);
 #else
@@ -41,7 +40,7 @@ namespace CISOServer.Net.Sockets
 			{
 				var context = await httpListener.GetContextAsync().WaitAsync(cancellationToken);
 
-				if (context.Request.Url.Port == 8886)
+				if (context.Request.Url.AbsolutePath.StartsWith("/auth"))
 				{
 					AuthRequest.Invoke(context);
 					continue;

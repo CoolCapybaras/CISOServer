@@ -4,7 +4,7 @@ namespace CISOServer.Net.Packets.Clientbound
 {
 	public class BecomeHostPacket : IPacket
 	{
-		public int id = 9;
+		public int id = 13;
 
 		public ValueTask HandleAsync(Server server, Client client)
 		{

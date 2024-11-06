@@ -4,13 +4,15 @@ namespace CISOServer.Net.Packets.Clientbound
 {
 	public class LobbyJoinedPacket : IPacket
 	{
-		public int id = 6;
+		public int id = 10;
 
-		public List<Client> clients;
+		public int clientId;
+		public GameLobby lobby;
 
-		public LobbyJoinedPacket(List<Client> clients)
+		public LobbyJoinedPacket(int clientId, GameLobby lobby)
 		{
-			this.clients = clients;
+			this.clientId = clientId;
+			this.lobby = lobby;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)

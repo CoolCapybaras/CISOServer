@@ -2,43 +2,36 @@
 
 namespace CISOServer.Net.Packets.Clientbound
 {
-	[Flags]
-	public enum AuthResultFlags
+	public enum AuthResultType
 	{
-		Ok = 1,
-		HasUrl = 2,
-		HasToken = 4,
+		Ok,
+		Url,
 	}
 
 	public class AuthResultPacket : IPacket
 	{
-		public int id = 5;
+		public int id = 8;
 
-		public AuthResultFlags flags;
+		public AuthResultType type;
 		public int clientId;
 		public string name;
 		public string avatar;
+		public string? token;
 		public string url;
-		public string token;
 
 		public AuthResultPacket(string url)
 		{
-			this.flags = AuthResultFlags.HasUrl;
+			this.type = AuthResultType.Url;
 			this.url = url;
 		}
 
 		public AuthResultPacket(int clientId, string name, string avatar, string? token)
 		{
-			this.flags = AuthResultFlags.Ok;
+			this.type = AuthResultType.Ok;
 			this.clientId = clientId;
 			this.name = name;
 			this.avatar = avatar;
-
-			if (token != null)
-			{
-				this.token = token;
-				this.flags |= AuthResultFlags.HasToken;
-			}
+			this.token = token;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)

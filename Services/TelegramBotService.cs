@@ -116,7 +116,7 @@ namespace CISOServer.Services
 						await db.SaveChangesAsync();
 
 						using var stream = await httpClient.GetStreamAsync(await GetUserPhoto(authId));
-						await Misc.SaveProfileImageAsync(stream, user.id);
+						await Misc.SaveProfileImage(stream, user.id);
 						string token = HMACToken.Create(user.id, (int)timestamp.AddMonths(1).ToUnixTimeSeconds());
 						client.Auth(user.id, user.username, token);
 					}
