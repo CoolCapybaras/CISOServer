@@ -1,0 +1,127 @@
+﻿using CISOServer.Net.Packets;
+using CISOServer.Net.Packets.Clientbound;
+using CISOServer.Net.Packets.Serverbound;
+using CISOServer.Net.Sockets;
+using CISOServer.Utilities;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace CISOServer.Core
+{
+	public class Client : IDisposable
+	{
+		private Server server;
+		private ClientSocket socket;
+		private bool disposed;
+
+		public int Id { get; set; }
+		[JsonIgnore]
+		public bool IsAuthed => Id != 0;
+		public string Name { get; set; }
+		public string Avatar { get; set; }
+		[JsonIgnore]
+		public Lobby? Lobby { get; set; }
+		[JsonIgnore]
+		public IPAddress Ip => socket.Ip;
+
+		public Client(Server server, ClientSocket socket)
+		{
+			this.socket = socket;
+			this.server = server;
+		}
+
+		public async Task Start()
+		{
+			try
+			{
+				while (true)
+				{
+					using var stream = new MemoryStream();
+					await socket.ReceiveAsync(stream);
+
+					stream.Position = 0;
+					Logger.LogInfo($"[{Name ?? socket.Ip.ToString()}]: {await new StreamReader(stream).ReadToEndAsync()}");
+
+					stream.Position = 0;
+					int id = JsonSerializer.Deserialize<BasePacket>(stream, Misc.JsonSerializerOptions).id;
+					stream.Position = 0;
+					switch (id)
+					{
+						case 1:
+							await JsonSerializer.Deserialize<AuthPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 2:
+							await JsonSerializer.Deserialize<CreateLobbyPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 3:
+							await JsonSerializer.Deserialize<JoinLobbyPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 4:
+							await JsonSerializer.Deserialize<LeaveLobbyPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 10:
+							await JsonSerializer.Deserialize<UpdateProfilePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+					}
+				}
+			}
+			catch (Exception ex) when (ex is SocketException || ex is JsonException) { }
+			catch (Exception ex)
+			{
+				Logger.LogError(ex.ToString());
+			}
+
+			OnDisconnect();
+			this.Dispose();
+		}
+
+		public void Auth(int id, string name, string? token = null)
+		{
+			Id = id;
+			Name = name;
+			Avatar = id > 0 ? $"{Misc.AppHostname}profileImages/{id}.jpg" : $"{Misc.AppHostname}profileImages/default.jpg";
+			SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
+		}
+
+		public Task Disconnect()
+		{
+			return socket.CloseAsync();
+		}
+
+		private void OnDisconnect()
+		{
+			server.AuthTokenManager.RemoveToken(this);
+			Lobby?.OnClientLeave(this);
+			server.Clients.TryRemove(this);
+
+			if (!IsAuthed)
+				return;
+
+			Logger.LogInfo($"{Name} has left the server");
+		}
+
+		public void SendPacket(IPacket packet)
+		{
+			socket.Send(JsonSerializer.SerializeToUtf8Bytes(packet, packet.GetType(), Misc.JsonSerializerOptions));
+		}
+
+		public void SendMessage(string text, int type = 0)
+		{
+			socket.Send(JsonSerializer.SerializeToUtf8Bytes(new MessagePacket(type, text), Misc.JsonSerializerOptions));
+		}
+
+		public void Dispose()
+		{
+			if (disposed)
+				return;
+
+			disposed = true;
+
+			socket.Dispose();
+
+			GC.SuppressFinalize(this);
+		}
+	}
+}
