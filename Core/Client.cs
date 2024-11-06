@@ -84,7 +84,37 @@ namespace CISOServer.Core
 			Id = id;
 			Name = name;
 			Avatar = id > 0 ? $"{Misc.AppHostname}profileImages/{id}.jpg" : $"{Misc.AppHostname}profileImages/default.jpg";
+
+			var client = server.Clients.FirstOrDefault(x => x.Id == id && x != this);
 			SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
+			if (client != null)
+			{
+				Lobby = client.Lobby;
+				Player = client.Player;
+				Player.Client = this;
+				server.Clients.TryRemove(client);
+
+				Player.State = ClientState.Ok;
+				SendPacket(new LobbyJoinedPacket(Player.Id, Lobby!));
+				Lobby.BroadcastOther(Player, new ClientStatePacket(Player.Id, Player.State));
+			}
+		}
+
+		public void JoinLobby(int lobbyId)
+		{
+			if (!server.Lobbies.TryGetValue(lobbyId, out var lobby))
+			{
+				SendMessage("Такого лобби не существует", 2);
+				return;
+			}
+
+			if (lobby.IsStarted)
+			{
+				SendMessage("Лобби уже запущено", 2);
+				return;
+			}
+
+			lobby.OnClientJoin(this);
 		}
 
 		public Task Disconnect()
@@ -95,11 +125,23 @@ namespace CISOServer.Core
 		private void OnDisconnect()
 		{
 			server.AuthTokenManager.RemoveToken(this);
-			Lobby?.OnClientLeave(this);
-			server.Clients.TryRemove(this);
 
 			if (!IsAuthed)
 				return;
+
+			if (Lobby != null)
+			{
+				if (Lobby.IsStarted)
+				{
+					Player.State = ClientState.ConnectionError;
+					Lobby.BroadcastOther(Player, new ClientStatePacket(Player.Id, Player.State));
+				}
+				else
+				{
+					Lobby.OnClientLeave(this);
+					server.Clients.TryRemove(this);
+				}
+			}
 
 			Logger.LogInfo($"{Name} has left the server");
 		}
@@ -114,7 +156,7 @@ namespace CISOServer.Core
 			socket.Send(packet);
 		}
 
-		public void SendMessage(string text, int type = 0)
+		public void SendMessage(string text, int type)
 		{
 			socket.Send(JsonSerializer.SerializeToUtf8Bytes(new MessagePacket(type, text), Misc.JsonSerializerOptions));
 		}

@@ -95,6 +95,9 @@ namespace CISOServer.Services
 				client.Auth(user.id, user.username, token);
 			}
 
+			if (authToken.LobbyId != 0)
+				client.JoinLobby(authToken.LobbyId);
+
 			await SendMessage(context, "Авторизация успешна, можете закрыть страницу");
 			context.Response.Close();
 			Logger.LogInfo($"{ip} authed as {client.Name} using vk");
