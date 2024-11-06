@@ -7,17 +7,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CISOServer", "CISOServer.cs
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug-Editor|Any CPU = Debug-Editor|Any CPU
-		Debug-WebGL|Any CPU = Debug-WebGL|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Release-Editor|Any CPU = Release-Editor|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug-Editor|Any CPU.ActiveCfg = Debug-Editor|Any CPU
 		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug-Editor|Any CPU.Build.0 = Debug-Editor|Any CPU
-		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug-WebGL|Any CPU.ActiveCfg = Debug-WebGL|Any CPU
-		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Debug-WebGL|Any CPU.Build.0 = Debug-WebGL|Any CPU
 		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Release-Editor|Any CPU.ActiveCfg = Release-Editor|Any CPU
+		{6844A0A7-B332-4B2C-B98D-33DCAFBC7558}.Release-Editor|Any CPU.Build.0 = Release-Editor|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

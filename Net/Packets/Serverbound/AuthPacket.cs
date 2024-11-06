@@ -17,7 +17,7 @@ namespace CISOServer.Net.Packets.Serverbound
 
 	public class AuthPacket : IPacket
 	{
-		public int id = 1;
+		public int id = 2;
 
 		public AuthType type;
 		public string data;
@@ -37,7 +37,7 @@ namespace CISOServer.Net.Packets.Serverbound
 			{
 				if (!UpdateProfilePacket.NameRegex.IsMatch(data))
 				{
-					client.SendMessage("Wrong name");
+					client.SendMessage("Имя должно быть от 3 до 24 символов и содержать только буквы или цифры");
 					return;
 				}
 
@@ -55,7 +55,7 @@ namespace CISOServer.Net.Packets.Serverbound
 					return;
 
 				var timestamp = DateTimeOffset.UtcNow;
-				if (timestamp <= DateTimeOffset.FromUnixTimeSeconds(token.Value.expires))
+				if (timestamp >= DateTimeOffset.FromUnixTimeSeconds(token.Value.expires))
 					return;
 
 				using var db = new ApplicationDbContext();

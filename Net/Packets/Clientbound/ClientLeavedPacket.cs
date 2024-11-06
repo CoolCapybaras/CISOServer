@@ -4,7 +4,7 @@ namespace CISOServer.Net.Packets.Clientbound
 {
 	public class ClientLeavedPacket : IPacket
 	{
-		public int id = 8;
+		public int id = 12;
 
 		public int clientId;
 

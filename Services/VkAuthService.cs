@@ -4,6 +4,7 @@ using CISOServer.Managers;
 using CISOServer.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 
@@ -80,7 +81,7 @@ namespace CISOServer.Services
 				await db.SaveChangesAsync();
 
 				using var stream = await httpClient.GetStreamAsync($"{vkResponse["avatar"].GetValue<string>()[..^5]}200x200");
-				await Misc.SaveProfileImageAsync(stream, user.id);
+				await Misc.SaveProfileImage(stream, user.id);
 				string token = HMACToken.Create(user.id, (int)timestamp.AddMonths(1).ToUnixTimeSeconds());
 				client.Auth(user.id, user.username, token);
 			}
@@ -127,7 +128,7 @@ namespace CISOServer.Services
 			return await response.Content.ReadAsStringAsync();
 		}
 
-		public static string GetCodeChallenge(string codeVerifier) => Misc.Base64UrlEncode(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier)));
+		public static string GetCodeChallenge(string codeVerifier) => Misc.Base64UrlEncode(SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier)));
 
 		public void Dispose()
 		{

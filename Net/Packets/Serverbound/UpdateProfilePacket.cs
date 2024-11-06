@@ -14,10 +14,16 @@ namespace CISOServer.Net.Packets.Serverbound
 
 		public static Regex NameRegex { get; } = MyNameRegex();
 
-		public int id => 10;
+		public int id = 7;
 
 		public string name;
 		public string image;
+
+		public UpdateProfilePacket(string name, string image)
+		{
+			this.name = name;
+			this.image = image;
+		}
 
 		public async ValueTask HandleAsync(Server server, Client client)
 		{
@@ -49,7 +55,7 @@ namespace CISOServer.Net.Packets.Serverbound
 				return;
 			}
 
-			await Misc.SaveProfileImageAsync(image, client.Id);
+			await Misc.SaveProfileImage(image, client.Id);
 
 			image.Dispose();
 		}

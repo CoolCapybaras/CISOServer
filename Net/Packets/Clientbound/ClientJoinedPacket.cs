@@ -1,14 +1,15 @@
 ﻿using CISOServer.Core;
+using CISOServer.Gamelogic;
 
 namespace CISOServer.Net.Packets.Clientbound
 {
 	public class ClientJoinedPacket : IPacket
 	{
-		public int id = 7;
+		public int id = 11;
 
-		public Client client;
+		public Player client;
 
-		public ClientJoinedPacket(Client client)
+		public ClientJoinedPacket(Player client)
 		{
 			this.client = client;
 		}

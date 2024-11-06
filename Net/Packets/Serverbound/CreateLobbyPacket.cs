@@ -5,11 +5,13 @@ namespace CISOServer.Net.Packets.Serverbound
 {
 	public class CreateLobbyPacket : IPacket
 	{
-		public int id = 2;
+		public int id = 3;
 
-		public CreateLobbyPacket()
+		public int maxClients;
+
+		public CreateLobbyPacket(int maxClients)
 		{
-
+			this.maxClients = maxClients;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)
@@ -17,8 +19,10 @@ namespace CISOServer.Net.Packets.Serverbound
 			if (!client.IsAuthed || client.Lobby != null)
 				return ValueTask.CompletedTask;
 
+			maxClients = Math.Clamp(maxClients, 2, 5);
+
 			int id = Misc.RandomId();
-			var lobby = new Lobby(server, id);
+			var lobby = new GameLobby(server, id, maxClients);
 			server.Lobbies.TryAdd(id, lobby);
 			lobby.OnClientJoin(client);
 

@@ -1,8 +1,7 @@
-﻿using SixLabors.ImageSharp;
+﻿using CISOServer.Utilities.JsonConverters;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace CISOServer.Utilities
@@ -11,15 +10,21 @@ namespace CISOServer.Utilities
 	{
 		public static string AppHostname { get; private set; }
 
-		public static void InitAppHostname(string hostname)
-		{
-			AppHostname = hostname;
-		}
-
 		public static JsonSerializerOptions JsonSerializerOptions { get; } = new()
 		{
 			IncludeFields = true
 		};
+
+		public static JsonSerializerOptions JsonLobbySerializerOptions { get; } = new()
+		{
+			IncludeFields = true
+		};
+
+		public static void Init(string hostname)
+		{
+			AppHostname = hostname;
+			JsonLobbySerializerOptions.Converters.Add(new LobbyJsonConverter());
+		}
 
 		private static readonly JpegEncoder jpegEncoder = new()
 		{
@@ -52,13 +57,13 @@ namespace CISOServer.Utilities
 			return Convert.FromBase64String(base64);
 		}
 
-		public static async Task SaveProfileImageAsync(Stream stream, int userId)
+		public static async Task SaveProfileImage(Stream stream, int userId)
 		{
 			using var image = await Image.LoadAsync(stream);
-			await SaveProfileImageAsync(image, userId);
+			await SaveProfileImage(image, userId);
 		}
 
-		public static Task SaveProfileImageAsync(Image image, int userId)
+		public static Task SaveProfileImage(Image image, int userId)
 		{
 			image.Mutate(x => x.Resize(200, 200));
 			return image.SaveAsync($"profileImages/{userId}.jpg", jpegEncoder);

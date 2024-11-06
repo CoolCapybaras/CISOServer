@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Text;
 
 namespace CISOServer.Net.Sockets
 {
@@ -33,7 +34,7 @@ namespace CISOServer.Net.Sockets
 
 		public async Task ReceiveAsync(Stream stream)
 		{
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			string message = await streamReader.ReadLineAsync() ?? throw new SocketException();
 			var bytes = Encoding.UTF8.GetBytes(message);
 			stream.Write(bytes, 0, bytes.Length);
@@ -55,7 +56,7 @@ namespace CISOServer.Net.Sockets
 
 		public void Send(byte[] message)
 		{
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			streamWriter.WriteLine(Encoding.UTF8.GetString(message));
 #else
 			webSocket.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -74,7 +75,7 @@ namespace CISOServer.Net.Sockets
 
 			disposed = true;
 
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			streamReader.Dispose();
 			streamWriter.Dispose();
 			networkStream.Dispose();

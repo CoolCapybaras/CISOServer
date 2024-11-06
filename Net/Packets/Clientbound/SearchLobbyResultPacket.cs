@@ -2,17 +2,15 @@
 
 namespace CISOServer.Net.Packets.Clientbound
 {
-	public class MessagePacket : IPacket
+	public class SearchLobbyResultPacket : IPacket
 	{
-		public int id = 1;
+		public int id = 9;
 
-		public int type;
-		public string text;
+		public IEnumerable<GameLobby> lobbies;
 
-		public MessagePacket(int type, string text)
+		public SearchLobbyResultPacket(IEnumerable<GameLobby> lobbies)
 		{
-			this.type = type;
-			this.text = text;
+			this.lobbies = lobbies;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)

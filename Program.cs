@@ -3,9 +3,9 @@
 namespace CISOServer
 {
 	internal class Program
-    {
-        static void Main(string[] args)
-        {
+	{
+		static void Main(string[] args)
+		{
 			var server = new Server();
 			var task = Task.Run(server.Start);
 
@@ -14,5 +14,5 @@ namespace CISOServer
 			server.Stop();
 			task.Wait();
 		}
-    }
+	}
 }

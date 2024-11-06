@@ -10,14 +10,14 @@ namespace CISOServer.Core
 {
 	public class Server
 	{
-		public AuthTokenManager AuthTokenManager { get; } = new();
-		public ConcurrentHashSet<Client> Clients { get; } = [];
-		public ConcurrentDictionary<int, Lobby> Lobbies { get; } = [];
-		public VkAuthService VkAuthService { get; private set; }
-		public TelegramBotService TelegramBotService { get; private set; }
-
 		private SocketListener socketListener;
 		private CancellationTokenSource cancellationSource = new();
+
+		public AuthTokenManager AuthTokenManager { get; } = new();
+		public ConcurrentHashSet<Client> Clients { get; } = [];
+		public ConcurrentDictionary<int, GameLobby> Lobbies { get; } = [];
+		public VkAuthService VkAuthService { get; private set; }
+		public TelegramBotService TelegramBotService { get; private set; }
 
 		public async Task Start()
 		{
@@ -28,7 +28,7 @@ namespace CISOServer.Core
 			TelegramBotService = new TelegramBotService(this, cancellationSource.Token);
 			_ = Task.Run(TelegramBotService.Start);
 
-#if DEBUG_EDITOR
+#if DEBUG_EDITOR || RELEASE_EDITOR
 			int port = Config.Get<int>("serverTcpPort");
 			socketListener = new SocketListener(port);
 			socketListener.Start();
@@ -81,7 +81,7 @@ namespace CISOServer.Core
 				return false;
 			}
 
-			Misc.InitAppHostname(Config.Get<string>("appHostname"));
+			Misc.Init(Config.Get<string>("appHostname"));
 			HMACToken.Init(Config.Get<string>("secretKey"));
 			ApplicationDbContext.Init(Config.Get<string>("dbConnectionString"));
 
