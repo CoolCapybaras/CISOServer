@@ -1,5 +1,6 @@
 ﻿using CISOServer.Core;
 using CISOServer.Net.Packets;
+using CISOServer.Net.Packets.Clientbound;
 using System.Text.Json.Serialization;
 
 namespace CISOServer.Gamelogic
@@ -11,6 +12,7 @@ namespace CISOServer.Gamelogic
 		public int Id { get; }
 		public string Name => Client.Name;
 		public string Avatar => Client.Avatar;
+		public ClientState State { get; set; }
 		public int Health { get; set; }
 		public HashSet<Character> Characters { get; } = [];
 		[JsonIgnore]

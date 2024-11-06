@@ -15,17 +15,8 @@ namespace CISOServer.Net.Packets.Serverbound
 
 		public ValueTask HandleAsync(Server server, Client client)
 		{
-			if (!client.IsAuthed || client.Lobby != null
-				|| !server.Lobbies.TryGetValue(lobbyId, out var lobby))
-				return ValueTask.CompletedTask;
-
-			if (lobby.IsStarted)
-			{
-				client.SendMessage("Лобби уже запущено");
-				return ValueTask.CompletedTask;
-			}
-
-			lobby.OnClientJoin(client);
+			if (client.IsAuthed && client.Lobby == null)
+				client.JoinLobby(lobbyId);
 			return ValueTask.CompletedTask;
 		}
 	}

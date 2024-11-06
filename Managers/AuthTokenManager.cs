@@ -9,12 +9,14 @@ namespace CISOServer.Managers
 	public class AuthToken
 	{
 		public Client Client { get; set; }
+		public int LobbyId { get; set; }
 		public string Token { get; set; }
 		public DateTimeOffset ExpirationTime { get; set; }
 
-		public AuthToken(Client client)
+		public AuthToken(Client client, int lobbyId)
 		{
 			Client = client;
+			LobbyId = lobbyId;
 			Token = Misc.Base64UrlEncode(RandomNumberGenerator.GetBytes(8));
 			ExpirationTime = DateTimeOffset.UtcNow.AddMinutes(1);
 		}
@@ -25,11 +27,11 @@ namespace CISOServer.Managers
 		private ConcurrentDictionary<string, AuthToken> tokens = [];
 		private ConcurrentDictionary<Client, AuthToken> clientToToken = [];
 
-		public string CreateToken(Client client)
+		public string CreateToken(Client client, int lobbyId)
 		{
 			RemoveToken(client);
 
-			var token = new AuthToken(client);
+			var token = new AuthToken(client, lobbyId);
 			tokens.TryAdd(token.Token, token);
 			clientToToken.TryAdd(client, token);
 			return token.Token;

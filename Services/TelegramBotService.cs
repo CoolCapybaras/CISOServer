@@ -130,6 +130,9 @@ namespace CISOServer.Services
 						client.Auth(user.id, user.username, token);
 					}
 
+					if (authToken.LobbyId != 0)
+						client.JoinLobby(authToken.LobbyId);
+
 					await SendMessage(message["chat"]["id"].GetValue<int>(), "✅ Авторизация успешна");
 					Logger.LogInfo($"{ip} authed as {client.Name} using telegram");
 				}

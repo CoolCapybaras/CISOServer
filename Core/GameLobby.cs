@@ -32,7 +32,7 @@ namespace CISOServer.Core
 			{
 				if (Players.Count == MaxClients)
 				{
-					client.SendMessage("Нет свободных мест");
+					client.SendMessage("Нет свободных мест", 2);
 					return;
 				}
 
