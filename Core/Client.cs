@@ -66,6 +66,12 @@ namespace CISOServer.Core
 						case 7:
 							await JsonSerializer.Deserialize<UpdateProfilePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
 							break;
+						case 14:
+							await JsonSerializer.Deserialize<StartGamePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 15:
+							await JsonSerializer.Deserialize<GameActionPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
 					}
 				}
 			}
@@ -95,8 +101,7 @@ namespace CISOServer.Core
 				server.Clients.TryRemove(client);
 
 				Player.State = ClientState.Ok;
-				SendPacket(new LobbyJoinedPacket(Player.Id, Lobby!));
-				Lobby.BroadcastOther(Player, new ClientStatePacket(Player.Id, Player.State));
+				Lobby.RestorePlayer(Player);
 			}
 		}
 
