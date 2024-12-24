@@ -7,9 +7,9 @@ namespace CISOServer.Net.Packets.Clientbound
 	{
 		public int id = 19;
 
-		public HashSet<Card> cards;
+		public List<Card> cards;
 
-		public SyncHandPacket(HashSet<Card> cards)
+		public SyncHandPacket(List<Card> cards)
 		{
 			this.cards = cards;
 		}

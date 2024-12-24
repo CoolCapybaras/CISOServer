@@ -17,6 +17,11 @@ namespace CISOServer.Net.Packets.Serverbound
 		public Card card;
 		public int targetId;
 
+		public GameActionPacket()
+		{
+
+		}
+
 		public GameActionPacket(GameAction action)
 		{
 			this.action = action;

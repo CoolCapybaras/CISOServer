@@ -6,6 +6,11 @@ namespace CISOServer.Net.Packets.Serverbound
 	{
 		public int id = 15;
 
+		public StartGamePacket()
+		{
+
+		}
+
 		public ValueTask HandleAsync(Server server, Client client)
 		{
 			client.Lobby?.OnGameStart(client);

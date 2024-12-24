@@ -70,7 +70,6 @@ namespace CISOServer.Services
 				if (httpMessage.StatusCode != HttpStatusCode.OK)
 				{
 					httpMessage.Dispose();
-					Logger.LogError("Wrong status code");
 					continue;
 				}
 

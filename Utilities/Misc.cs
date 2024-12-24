@@ -2,7 +2,9 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 
 namespace CISOServer.Utilities
 {
@@ -12,6 +14,7 @@ namespace CISOServer.Utilities
 
 		public static JsonSerializerOptions JsonSerializerOptions { get; } = new()
 		{
+			Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
 			IncludeFields = true
 		};
 

@@ -1,5 +1,4 @@
-﻿
-namespace CISOServer.Gamelogic
+﻿namespace CISOServer.Gamelogic
 {
 	public enum CardType
 	{

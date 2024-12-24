@@ -56,9 +56,6 @@ namespace CISOServer.Net.Sockets
 
 		public void Send(byte[] message)
 		{
-			if (disposed)
-				return;
-
 #if DEBUG_EDITOR || RELEASE_EDITOR
 			streamWriter.WriteLine(Encoding.UTF8.GetString(message));
 #else

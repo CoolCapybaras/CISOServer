@@ -61,21 +61,28 @@ namespace CISOServer.Core
 
 		private async Task ProcessGame()
 		{
+			Broadcast(new GameStartedPacket());
+
 			InitDealDeck();
-			DealCards();
-			await Task.Delay(1000);
+			await DealCards();
 
 			mainTurnPlayer = Players[Random.Shared.Next(Players.Count)];
 			turnPlayer = mainTurnPlayer;
 			Broadcast(new ClientTurnPacket(turnPlayer.Id));
+			state = GameState.Attack;
 
 			while (true)
 			{
-				state = GameState.Attack;
 				await WaitForAction();
 
 				if (previousPlayer.Health <= 0)
 				{
+					if (Players.All(x => x.State != ClientState.InGame))
+					{
+						Destroy(true);
+						return;
+					}
+
 					Broadcast(new ClientDiedPacket(previousPlayer.Id));
 					deadPlayersCount++;
 					await Task.Delay(500);
@@ -89,8 +96,8 @@ namespace CISOServer.Core
 
 				if (state == GameState.None)
 				{
-					if (DealCards())
-						await Task.Delay(1000);
+					await DealCards();
+					state = GameState.Attack;
 				}
 
 				Broadcast(new ClientTurnPacket(turnPlayer.Id));
@@ -102,20 +109,17 @@ namespace CISOServer.Core
 		private void InitDealDeck()
 		{
 			var deck = new List<Card>();
-			deck.AddRange(Enumerable.Repeat(new Card(CardType.Attack), 9));
-			deck.AddRange(Enumerable.Repeat(new Card(CardType.Defense), 9));
-			deck.AddRange(Enumerable.Repeat(new Card(CardType.Counterattack), 9));
-			deck.AddRange(Enumerable.Repeat(new Card(CardType.Reflection), 9));
+			deck.AddRange(Enumerable.Repeat(new Card(CardType.Attack), 12));
+			deck.AddRange(Enumerable.Repeat(new Card(CardType.Defense), 8));
+			deck.AddRange(Enumerable.Repeat(new Card(CardType.Counterattack), 8));
+			deck.AddRange(Enumerable.Repeat(new Card(CardType.Reflection), 8));
 			deck.Shuffle();
 
 			dealDeck = new Stack<Card>(deck);
 		}
 
-		private bool DealCards()
+		private async Task DealCards()
 		{
-			if (dealDeck.Count == 0)
-				return false;
-
 			var ids = new List<int>();
 			foreach (var player in Players)
 			{
@@ -127,7 +131,8 @@ namespace CISOServer.Core
 				player.SendPacket(new SyncHandPacket(player.Cards));
 			}
 			Broadcast(new ClientsGotCardsPacket(ids));
-			return true;
+			if (ids.Count > 0)
+				await Task.Delay(ids.Count * 100);
 		}
 
 		public void OnClientAction(Player player, GameAction type, Card card, int targetId)
@@ -245,7 +250,7 @@ namespace CISOServer.Core
 		{
 			var previousPlayer = mainTurnPlayer;
 			do mainTurnPlayer = Players[(Players.IndexOf(mainTurnPlayer) + 1) % Players.Count];
-			while (mainTurnPlayer.Health <= 0);
+			while (mainTurnPlayer.Health <= 0 && mainTurnPlayer != previousPlayer);
 			UpdateTurn(mainTurnPlayer, previousPlayer, GameState.None);
 		}
 
@@ -263,13 +268,25 @@ namespace CISOServer.Core
 			var timeoutTask = Task.Delay(60000);
 			actionAllowed = true;
 			var completedTask = await Task.WhenAny(actionTask.Task, timeoutTask);
-			actionAllowed = false;
 			if (completedTask == timeoutTask)
+			{
+				if (turnPlayer.State == ClientState.ConnectionError)
+					turnPlayer.Health = 0;
 				OnClientAction(turnPlayer, GameAction.EndTurn, null!, 0);
+			}
+			actionAllowed = false;
 		}
 
-		public void RestorePlayer(Player player)
+		public void RestorePlayer(Client client, Client oldClient)
 		{
+			client.Lobby = oldClient.Lobby;
+			client.Player = oldClient.Player;
+			client.Player.Client = client;
+			server.Clients.TryRemove(oldClient);
+
+			var player = client.Player;
+
+			player.State = ClientState.InGame;
 			player.SendPacket(new LobbyJoinedPacket(player.Id, this));
 			player.SendPacket(new SyncHandPacket(player.Cards));
 			player.SendPacket(new ClientsGotCardsPacket(Enumerable.Repeat(player.Id, player.Cards.Count).ToList()));
@@ -309,11 +326,30 @@ namespace CISOServer.Core
 			}
 		}
 
-		public void OnClientLeave(Client client)
+		public void OnClientLeave(Client client, bool connectionError = false)
 		{
+			var player = client.Player!;
+
+			if (IsStarted)
+			{
+				if (connectionError)
+				{
+					player.State = ClientState.ConnectionError;
+				}
+				else
+				{
+					client.Lobby = null;
+					client.Player = null;
+
+					player.Health = 0;
+					player.State = ClientState.Disconnected;
+				}
+				Broadcast(new ClientStatePacket(player.Id, player.State));
+				return;
+			}
+
 			lock (Players)
 			{
-				var player = client.Player!;
 				client.Lobby = null;
 				client.Player = null;
 
@@ -373,6 +409,8 @@ namespace CISOServer.Core
 			{
 				player.Client.Lobby = null;
 				player.Client.Player = null;
+				if (player.State == ClientState.ConnectionError)
+					server.Clients.TryRemove(player.Client);
 			}
 
 			server.Lobbies.TryRemove(Id, out _);

@@ -6,9 +6,9 @@ namespace CISOServer.Net.Packets.Clientbound
 	{
 		public int id = 9;
 
-		public IEnumerable<GameLobby> lobbies;
+		public List<GameLobby> lobbies;
 
-		public SearchLobbyResultPacket(IEnumerable<GameLobby> lobbies)
+		public SearchLobbyResultPacket(List<GameLobby> lobbies)
 		{
 			this.lobbies = lobbies;
 		}
