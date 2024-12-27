@@ -375,7 +375,7 @@ namespace CISOServer.Core
 
 		public void OnGameStart(Client client)
 		{
-			if (client.Player != host || IsStarted)
+			if (client.Player != host || IsStarted || Players.Count < 2)
 				return;
 
 			Task.Run(Start);
