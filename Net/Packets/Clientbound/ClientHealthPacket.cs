@@ -2,24 +2,17 @@
 
 namespace CISOServer.Net.Packets.Clientbound
 {
-	public enum ClientState
+	public class ClientHealthPacket : IPacket
 	{
-		InGame,
-		ConnectionError,
-		Disconnected
-	}
-
-	public class ClientStatePacket : IPacket
-	{
-		public int id = 14;
+		public int id = 24;
 
 		public int clientId;
-		public ClientState state;
+		public int health;
 
-		public ClientStatePacket(int clientId, ClientState state)
+		public ClientHealthPacket(int clientId, int health)
 		{
 			this.clientId = clientId;
-			this.state = state;
+			this.health = health;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)

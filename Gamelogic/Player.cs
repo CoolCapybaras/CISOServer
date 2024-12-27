@@ -13,10 +13,10 @@ namespace CISOServer.Gamelogic
 		public string Name => Client.Name;
 		public string Avatar => Client.Avatar;
 		public ClientState State { get; set; }
-		public int Health { get; set; }
+		public int Health { get; set; } = 3;
 		public HashSet<Character> Characters { get; } = [];
 		[JsonIgnore]
-		public HashSet<Card> Cards { get; } = [];
+		public List<Card> Cards { get; } = [];
 		public int CardCount => Cards.Count;
 
 		public Player(Client client, int id)
@@ -25,8 +25,20 @@ namespace CISOServer.Gamelogic
 			this.Id = id;
 		}
 
-		public void SendPacket(byte[] packet) => Client.SendPacket(packet);
-		public void SendPacket(IPacket packet) => Client.SendPacket(packet);
-		public void SendMessage(string text, int type) => Client.SendMessage(text, type);
+		public void SendPacket(byte[] packet)
+		{
+			if (State == ClientState.InGame)
+				Client.SendPacket(packet);
+		}
+		public void SendPacket(IPacket packet)
+		{
+			if (State == ClientState.InGame)
+				Client.SendPacket(packet);
+		}
+		public void SendMessage(string text, int type)
+		{
+			if (State == ClientState.InGame)
+				Client.SendMessage(text, type);
+		}
 	}
 }

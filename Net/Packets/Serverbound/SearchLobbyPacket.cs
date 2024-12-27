@@ -31,7 +31,7 @@ namespace CISOServer.Net.Packets.Serverbound
 
 			if (type == SearchLobbyType.Search)
 			{
-				var lobbies = server.Lobbies.Where(x => !client.SearchedLobbyIds.Contains(x.Key)).Select(x => x.Value).Take(count);
+				var lobbies = server.Lobbies.Where(x => !client.SearchedLobbyIds.Contains(x.Key)).Select(x => x.Value).Take(count).ToList();
 				foreach (var lobby in lobbies)
 					client.SearchedLobbyIds.Add(lobby.Id);
 				client.SendPacket(JsonSerializer.SerializeToUtf8Bytes(new SearchLobbyResultPacket(lobbies), Misc.JsonLobbySerializerOptions));

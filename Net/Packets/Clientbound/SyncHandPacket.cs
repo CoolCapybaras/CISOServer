@@ -1,16 +1,17 @@
 ﻿using CISOServer.Core;
+using CISOServer.Gamelogic;
 
 namespace CISOServer.Net.Packets.Clientbound
 {
-	public class SearchLobbyResultPacket : IPacket
+	public class SyncHandPacket : IPacket
 	{
-		public int id = 9;
+		public int id = 19;
 
-		public List<GameLobby> lobbies;
+		public List<Card> cards;
 
-		public SearchLobbyResultPacket(List<GameLobby> lobbies)
+		public SyncHandPacket(List<Card> cards)
 		{
-			this.lobbies = lobbies;
+			this.cards = cards;
 		}
 
 		public ValueTask HandleAsync(Server server, Client client)

@@ -66,6 +66,15 @@ namespace CISOServer.Core
 						case 7:
 							await JsonSerializer.Deserialize<UpdateProfilePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
 							break;
+						case 14:
+							await JsonSerializer.Deserialize<StartGamePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 15:
+							await JsonSerializer.Deserialize<StartGamePacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
+						case 16:
+							await JsonSerializer.Deserialize<GameActionPacket>(stream, Misc.JsonSerializerOptions).HandleAsync(server, this);
+							break;
 					}
 				}
 			}
@@ -85,19 +94,10 @@ namespace CISOServer.Core
 			Name = name;
 			Avatar = id > 0 ? $"{Misc.AppHostname}profileImages/{id}.jpg" : $"{Misc.AppHostname}profileImages/default.jpg";
 
-			var client = server.Clients.FirstOrDefault(x => x.Id == id && x != this);
 			SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
-			if (client != null)
-			{
-				Lobby = client.Lobby;
-				Player = client.Player;
-				Player.Client = this;
-				server.Clients.TryRemove(client);
 
-				Player.State = ClientState.Ok;
-				SendPacket(new LobbyJoinedPacket(Player.Id, Lobby!));
-				Lobby.BroadcastOther(Player, new ClientStatePacket(Player.Id, Player.State));
-			}
+			var client = server.Clients.FirstOrDefault(x => x.Id == id && x != this);
+			client?.Lobby.RestorePlayer(this, client);
 		}
 
 		public void JoinLobby(int lobbyId)
@@ -131,16 +131,13 @@ namespace CISOServer.Core
 
 			if (Lobby != null)
 			{
-				if (Lobby.IsStarted)
-				{
-					Player.State = ClientState.ConnectionError;
-					Lobby.BroadcastOther(Player, new ClientStatePacket(Player.Id, Player.State));
-				}
-				else
-				{
-					Lobby.OnClientLeave(this);
+				if (!Lobby.IsStarted)
 					server.Clients.TryRemove(this);
-				}
+				Lobby.OnClientLeave(this, true);
+			}
+			else
+			{
+				server.Clients.TryRemove(this);
 			}
 
 			Logger.LogInfo($"{Name} has left the server");
