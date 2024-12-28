@@ -94,10 +94,19 @@ namespace CISOServer.Core
 			Name = name;
 			Avatar = id > 0 ? $"{Misc.AppHostname}profileImages/{id}.jpg" : $"{Misc.AppHostname}profileImages/default.jpg";
 
-			SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
-
 			var client = server.Clients.FirstOrDefault(x => x.Id == id && x != this);
-			client?.Lobby.RestorePlayer(this, client);
+			if (client != null)
+			{
+				if (client.Lobby != null)
+				{
+					client.Lobby.RestorePlayer(this, client);
+					SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
+				}
+			}
+			else
+			{
+				SendPacket(new AuthResultPacket(Id, Name, Avatar, token));
+			}
 		}
 
 		public void JoinLobby(int lobbyId)
